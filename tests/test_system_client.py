@@ -6,7 +6,6 @@ import pytest
 
 from modules.system_client import SystemSnapshot, _bar, snapshot
 
-
 # ── _bar ───────────────────────────────────────────────────────────────────────
 
 

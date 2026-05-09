@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from modules.docker_client import DockerClient, STATUS_EMOJI
+from modules.docker_client import STATUS_EMOJI, DockerClient
 
 
 def _make_client(containers: list | None = None, ping_ok: bool = True) -> DockerClient:

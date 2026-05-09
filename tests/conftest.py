@@ -1,4 +1,5 @@
 """Fixtures compartidos para todos los tests."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock

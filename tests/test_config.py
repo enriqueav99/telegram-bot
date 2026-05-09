@@ -6,7 +6,6 @@ import pytest
 
 from config import DEFAULT_FEATURES, BotConfig, FeatureFlags
 
-
 # ── BotConfig ──────────────────────────────────────────────────────────────────
 
 

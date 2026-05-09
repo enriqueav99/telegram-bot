@@ -16,7 +16,9 @@ def _build_keyboard(features: dict[str, bool]) -> InlineKeyboardMarkup:
     for key, enabled in features.items():
         label = FEATURE_LABELS.get(key, key)
         icon = "✅" if enabled else "❌"
-        buttons.append([InlineKeyboardButton(f"{icon} {label}", callback_data=f"panel:toggle:{key}")])
+        buttons.append(
+            [InlineKeyboardButton(f"{icon} {label}", callback_data=f"panel:toggle:{key}")]
+        )
     buttons.append([InlineKeyboardButton("🔄 Actualizar", callback_data="panel:refresh")])
     return InlineKeyboardMarkup(buttons)
 

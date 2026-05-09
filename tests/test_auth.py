@@ -7,7 +7,6 @@ import pytest
 from config import BotConfig, FeatureFlags
 from handlers.auth import require_auth, require_module
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 

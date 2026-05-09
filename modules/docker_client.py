@@ -7,7 +7,6 @@ log = logging.getLogger(__name__)
 
 try:
     import docker
-    from docker.errors import DockerException, NotFound, APIError
 
     _DOCKER_AVAILABLE = True
 except ImportError:

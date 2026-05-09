@@ -1,27 +1,25 @@
 """Punto de entrada del bot de Telegram para homelab."""
+
 from __future__ import annotations
 
 import asyncio
 import contextlib
-import json
 import logging
 import time
 from pathlib import Path
 
-import aiohttp
 from aiohttp import web
 from telegram import Bot
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
     CommandHandler,
-    tasks,
 )
 
 from config import BotConfig, FeatureFlags
 from handlers import docker as docker_handler
-from handlers import general, panel, system as system_handler
-from handlers.auth import require_auth
+from handlers import general, panel
+from handlers import system as system_handler
 from logger import start_logger
 from modules.docker_client import DockerClient
 

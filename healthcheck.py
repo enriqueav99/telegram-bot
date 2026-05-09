@@ -1,4 +1,5 @@
 """Healthcheck: falla si el heartbeat tiene más de 90 segundos de antigüedad."""
+
 from __future__ import annotations
 
 import sys

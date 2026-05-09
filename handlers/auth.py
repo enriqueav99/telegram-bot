@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Coroutine
+from collections.abc import Callable, Coroutine
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from telegram import Update
@@ -36,8 +37,7 @@ def require_module(module: str):
             features = context.bot_data["features"]
             if not features.is_enabled(module):
                 await update.effective_message.reply_text(
-                    f"❌ El módulo *{module}* está desactivado\\.\n"
-                    f"Actívalo desde /panel",
+                    f"❌ El módulo *{module}* está desactivado\\.\nActívalo desde /panel",
                     parse_mode="MarkdownV2",
                 )
                 return
