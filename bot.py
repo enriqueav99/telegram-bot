@@ -16,11 +16,17 @@ from telegram.ext import (
 )
 
 from config import BotConfig, FeatureFlags
+from handlers import digest as digest_handler
 from handlers import docker as docker_handler
-from handlers import general, panel, webhooks
+from handlers import general, notes, panel, webhooks
+from handlers import qbittorrent as qbt_handler
+from handlers import speedtest as speedtest_handler
+from handlers import ssh as ssh_handler
 from handlers import system as system_handler
 from logger import start_logger
 from modules.docker_client import DockerClient
+from modules.qbittorrent_client import QBittorrentClient
+from modules.ssh_client import SSHConfig
 
 HEARTBEAT_FILE = Path("/tmp/.bot_alive")
 log = logging.getLogger("bot")
@@ -48,6 +54,8 @@ async def main() -> None:
 
     features = FeatureFlags()
     docker = DockerClient()
+    qbt = QBittorrentClient()
+    ssh_config = SSHConfig.load()
 
     app = Application.builder().token(config.token).build()
 
@@ -56,6 +64,8 @@ async def main() -> None:
         "features": features,
         "docker": docker,
         "bot": app.bot,
+        "qbt": qbt,
+        "ssh_config": ssh_config,
     }
     app.bot_data.update(bot_data)
 
@@ -66,10 +76,21 @@ async def main() -> None:
     app.add_handler(CommandHandler("metrics", system_handler.metrics))
     app.add_handler(CommandHandler("docker", docker_handler.docker_list))
     app.add_handler(CommandHandler("panel", panel.panel))
+    app.add_handler(CommandHandler("speedtest", speedtest_handler.speedtest_cmd))
+    app.add_handler(CommandHandler("note", notes.note_cmd))
+    app.add_handler(CommandHandler("notes", notes.notes_list))
+    app.add_handler(CommandHandler("digest", digest_handler.digest_cmd))
+    app.add_handler(CommandHandler("torrents", qbt_handler.torrents_cmd))
+    app.add_handler(CommandHandler("torrent", qbt_handler.torrent_add))
+    app.add_handler(CommandHandler("ssh", ssh_handler.ssh_cmd))
+    app.add_handler(CommandHandler("sshadd", ssh_handler.sshadd_cmd))
+    app.add_handler(CommandHandler("sshdel", ssh_handler.sshdel_cmd))
 
     # Callbacks
     app.add_handler(CallbackQueryHandler(panel.panel_callback, pattern=r"^panel:"))
     app.add_handler(CallbackQueryHandler(docker_handler.docker_callback, pattern=r"^docker:"))
+    app.add_handler(CallbackQueryHandler(qbt_handler.qbt_callback, pattern=r"^qbt:"))
+    app.add_handler(CallbackQueryHandler(ssh_handler.ssh_callback, pattern=r"^ssh:"))
 
     # Heartbeat
     async def heartbeat(_: object) -> None:
@@ -77,6 +98,10 @@ async def main() -> None:
             HEARTBEAT_FILE.write_text(str(int(time.time())))
 
     app.job_queue.run_repeating(heartbeat, interval=30, first=0)
+
+    # Schedule daily digest
+    digest_hour, digest_minute = digest_handler.load_config()
+    digest_handler.schedule(app.job_queue, digest_hour, digest_minute)
 
     # Start webhook server
     webhook_runner = await _start_webhook_server(bot_data, config.alerts_port)

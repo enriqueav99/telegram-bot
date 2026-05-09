@@ -13,23 +13,28 @@ log = logging.getLogger(__name__)
 HELP_TEXT = """
 🤖 *Bot de Homelab*
 
-*Comandos disponibles:*
-
+*Servidor:*
 /status — Resumen rápido del servidor
 /metrics — Métricas detalladas del sistema
 /docker — Panel de contenedores Docker
+
+*Utilidades:*
+/speedtest — Test de velocidad de internet
+/note \\<texto\\> — Guardar una nota
+/note del \\<id\\> — Eliminar una nota
+/notes — Ver todas las notas
+/digest — Ver/cambiar hora del resumen diario
+/torrents — Lista de torrents activos
+/torrent \\<magnet\\> — Añadir torrent
+/ssh — Ejecutar comandos en el servidor
+/sshadd \\<alias\\> \\<cmd\\> — Registrar comando SSH
+/sshdel \\<alias\\> — Eliminar comando SSH
+
+*General:*
 /panel — Panel de control \\(activar/desactivar módulos\\)
 /help — Esta ayuda
 
 _Los módulos desactivados no responden sus comandos\\. Actívalos desde /panel\\._
-
-*Webhooks \\(puerto 9091\\):*
-
-`POST /alerts` — Alertmanager
-`POST /grafana` — Grafana Unified Alerting
-`POST /radarr` — Radarr \\(películas\\)
-`POST /sonarr` — Sonarr \\(series\\)
-`POST /crowdsec` — CrowdSec
 """
 
 
