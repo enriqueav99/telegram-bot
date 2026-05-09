@@ -62,9 +62,7 @@ async def _digest_job(context: ContextTypes.DEFAULT_TYPE) -> None:
             f"💿 Disco: {snap.disk_used_gb:.1f}/{snap.disk_total_gb:.1f} GB "
             f"({snap.disk_percent:.0f}%)"
         )
-        lines.append(
-            f"🌐 Red: ↑ {snap.net_sent_mb:.0f} MB  ↓ {snap.net_recv_mb:.0f} MB"
-        )
+        lines.append(f"🌐 Red: ↑ {snap.net_sent_mb:.0f} MB  ↓ {snap.net_recv_mb:.0f} MB")
         lines.append("")
 
     if features.is_enabled("docker") and docker.available:

@@ -33,7 +33,9 @@ async def procs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     lines = ["📋 *Top procesos por CPU*\n"]
     for p in processes[:10]:
-        lines.append(f"`{p.name[:18]:<18}` {p.cpu_percent:5.1f}% CPU  {p.mem_mb:6.0f} MB  (PID {p.pid})")
+        lines.append(
+            f"`{p.name[:18]:<18}` {p.cpu_percent:5.1f}% CPU  {p.mem_mb:6.0f} MB  (PID {p.pid})"
+        )
 
     by_mem = sorted(processes, key=lambda x: x.mem_mb, reverse=True)
     lines.append("\n💾 *Top por memoria*\n")
