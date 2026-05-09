@@ -30,6 +30,8 @@ def _config(allowed: frozenset[int] = frozenset([111])) -> BotConfig:
         alerts_port=9091,
         alerts_chat_id=None,
         log_level="DEBUG",
+        github_token="",
+        github_repo="",
     )
 
 
