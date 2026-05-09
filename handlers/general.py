@@ -42,6 +42,8 @@ HELP_TEXT = """
 /logs — Ver logs del servidor
 /alerts — Historial de alertas recibidas
 /alertsclear — Limpiar historial de alertas
+/wg — Estado de peers WireGuard VPN
+/ci — Últimas ejecuciones de GitHub Actions
 
 *Utilidades:*
 /speedtest — Test de velocidad de internet
