@@ -12,6 +12,7 @@ from modules.ssh_client import SSHConfig
 log = logging.getLogger(__name__)
 
 MAX_OUTPUT = 3800
+AI_BOT_ALIAS = "ai-bot"
 
 
 def _commands_keyboard(commands: dict[str, str]) -> InlineKeyboardMarkup:
@@ -79,6 +80,35 @@ async def sshdel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text(
             f"❌ No existe el comando `{alias}`.", parse_mode="Markdown"
         )
+
+
+@require_auth
+@require_module("ssh")
+async def restartai_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    config: SSHConfig = context.bot_data["ssh_config"]
+    if not config.available:
+        await update.message.reply_text("❌ SSH_HOST no configurado.")
+        return
+
+    commands = ssh_client.load_commands()
+    command = commands.get(AI_BOT_ALIAS)
+    if not command:
+        await update.message.reply_text(
+            f"❌ Sin comando de reinicio configurado.\n\n"
+            f"Configúralo una vez con:\n`/sshadd {AI_BOT_ALIAS} <tu comando>`",
+            parse_mode="Markdown",
+        )
+        return
+
+    msg = await update.message.reply_text("♻️ Reiniciando bot de IA...")
+    try:
+        _, _, exit_code = await ssh_client.run(config, command)
+        if exit_code == 0:
+            await msg.edit_text("✅ Comando de reinicio ejecutado.")
+        else:
+            await msg.edit_text(f"⚠️ Comando ejecutado con código de salida {exit_code}.")
+    except Exception as exc:
+        await msg.edit_text(f"❌ Error SSH: {exc}")
 
 
 async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
