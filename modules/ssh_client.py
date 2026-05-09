@@ -1,30 +1,14 @@
 from __future__ import annotations
 
+import asyncio
 import json
-import os
-from dataclasses import dataclass
+import logging
 from pathlib import Path
 
 COMMANDS_FILE = Path("data/ssh_commands.json")
+SHELL_TIMEOUT = 30
 
-
-@dataclass
-class SSHConfig:
-    host: str
-    user: str
-    key_path: str | None
-
-    @classmethod
-    def load(cls) -> SSHConfig:
-        return cls(
-            host=os.getenv("SSH_HOST", ""),
-            user=os.getenv("SSH_USER", "root"),
-            key_path=os.getenv("SSH_KEY_PATH"),
-        )
-
-    @property
-    def available(self) -> bool:
-        return bool(self.host)
+log = logging.getLogger(__name__)
 
 
 def load_commands() -> dict[str, str]:
@@ -53,15 +37,15 @@ def remove_command(alias: str) -> bool:
     return True
 
 
-async def run(config: SSHConfig, command: str) -> tuple[str, str, int]:
-    import asyncssh  # noqa: PLC0415
-
-    keys = [config.key_path] if config.key_path else ()
-    async with asyncssh.connect(
-        config.host,
-        username=config.user,
-        client_keys=keys,
-        known_hosts=None,
-    ) as conn:
-        result = await conn.run(command, check=False)
-        return result.stdout or "", result.stderr or "", result.exit_status or 0
+async def run(command: str) -> tuple[str, str, int]:
+    proc = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=SHELL_TIMEOUT)
+    except TimeoutError:
+        proc.kill()
+        return "", f"Error: comando superó el límite de {SHELL_TIMEOUT}s", 1
+    return stdout.decode(errors="replace"), stderr.decode(errors="replace"), proc.returncode or 0

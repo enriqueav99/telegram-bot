@@ -30,7 +30,6 @@ from logger import start_logger
 from modules.claude_client import ClaudeClient
 from modules.docker_client import DockerClient
 from modules.qbittorrent_client import QBittorrentClient
-from modules.ssh_client import SSHConfig
 
 HEARTBEAT_FILE = Path("/tmp/.bot_alive")
 log = logging.getLogger("bot")
@@ -59,7 +58,6 @@ async def main() -> None:
     features = FeatureFlags()
     docker = DockerClient()
     qbt = QBittorrentClient()
-    ssh_config = SSHConfig.load()
     claude = ClaudeClient()
 
     app = Application.builder().token(config.token).build()
@@ -70,7 +68,6 @@ async def main() -> None:
         "docker": docker,
         "bot": app.bot,
         "qbt": qbt,
-        "ssh_config": ssh_config,
         "claude": claude,
     }
     app.bot_data.update(bot_data)
