@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from telegram import Update
@@ -18,7 +18,7 @@ def _claude_bot_status() -> str:
     try:
         data = json.loads(CLAUDE_BOT_STATUS_FILE.read_text())
         updated = datetime.fromisoformat(data["updated_at"])
-        age_s = int((datetime.now(timezone.utc) - updated).total_seconds())
+        age_s = int((datetime.now(UTC) - updated).total_seconds())
         if age_s > 120:
             return f"🤖 Claude Bot: ⚠️ sin actividad hace {age_s}s"
         sessions = data.get("session_count", 0)
