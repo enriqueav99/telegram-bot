@@ -20,6 +20,8 @@ def _bot_data(tmp_path, monkeypatch, features_on: list[str] = (), chat_id: int |
         alerts_port=9091,
         alerts_chat_id=chat_id,
         log_level="DEBUG",
+        github_token="",
+        github_repo="",
     )
     flags = FeatureFlags()
     for f in features_on:

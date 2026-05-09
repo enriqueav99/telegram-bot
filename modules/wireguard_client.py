@@ -44,9 +44,9 @@ class WgPeer:
         def fmt(b: int) -> str:
             if b < 1024:
                 return f"{b} B"
-            if b < 1024 ** 2:
+            if b < 1024**2:
                 return f"{b / 1024:.1f} KB"
-            return f"{b / 1024 ** 2:.1f} MB"
+            return f"{b / 1024**2:.1f} MB"
 
         return f"↓{fmt(self.rx_bytes)} ↑{fmt(self.tx_bytes)}"
 

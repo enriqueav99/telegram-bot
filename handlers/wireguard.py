@@ -13,7 +13,9 @@ log = logging.getLogger(__name__)
 
 
 def _keyboard() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Actualizar", callback_data="wg:refresh")]])
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton("🔄 Actualizar", callback_data="wg:refresh")]]
+    )
 
 
 def _build_text(peers: list[wireguard_client.WgPeer]) -> str:
@@ -40,7 +42,9 @@ async def wg_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     msg = await update.message.reply_text("⏳ Consultando WireGuard...")
     peers = await wireguard_client.get_peers(docker)
     if peers is None:
-        await msg.edit_text("❌ No se pudo conectar con el contenedor `wireguard`.", parse_mode="Markdown")
+        await msg.edit_text(
+            "❌ No se pudo conectar con el contenedor `wireguard`.", parse_mode="Markdown"
+        )
         return
     await msg.edit_text(_build_text(peers), parse_mode="Markdown", reply_markup=_keyboard())
 
@@ -65,4 +69,6 @@ async def wg_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if peers is None:
         await query.answer("❌ Error conectando con WireGuard", show_alert=True)
         return
-    await query.edit_message_text(_build_text(peers), parse_mode="Markdown", reply_markup=_keyboard())
+    await query.edit_message_text(
+        _build_text(peers), parse_mode="Markdown", reply_markup=_keyboard()
+    )

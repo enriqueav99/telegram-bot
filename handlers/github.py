@@ -12,7 +12,9 @@ log = logging.getLogger(__name__)
 
 
 def _keyboard() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Actualizar", callback_data="ci:refresh")]])
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton("🔄 Actualizar", callback_data="ci:refresh")]]
+    )
 
 
 def _build_text(runs, repo: str) -> str:
@@ -66,4 +68,6 @@ async def ci_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if runs is None:
         await query.answer("❌ Error consultando GitHub", show_alert=True)
         return
-    await query.edit_message_text(_build_text(runs, gh.repo), parse_mode="Markdown", reply_markup=_keyboard())
+    await query.edit_message_text(
+        _build_text(runs, gh.repo), parse_mode="Markdown", reply_markup=_keyboard()
+    )
