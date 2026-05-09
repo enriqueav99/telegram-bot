@@ -26,6 +26,7 @@ def _make_client(containers: list | None = None, ping_ok: bool = True) -> Docker
 def _make_container(name: str, status: str = "running", tags: list[str] | None = None):
     c = MagicMock()
     c.name = name
+    c.short_id = name[:12].ljust(12, "0")
     c.status = status
     c.image.tags = tags or [f"image/{name}:latest"]
     c.image.short_id = f"sha256:{name[:6]}"

@@ -26,6 +26,7 @@ STATUS_EMOJI = {
 @dataclass
 class ContainerInfo:
     name: str
+    short_id: str
     status: str
     image: str
     emoji: str
@@ -55,6 +56,7 @@ class DockerClient:
             return [
                 ContainerInfo(
                     name=c.name,
+                    short_id=c.short_id,
                     status=c.status,
                     image=c.image.tags[0] if c.image.tags else c.image.short_id,
                     emoji=STATUS_EMOJI.get(c.status, "❓"),

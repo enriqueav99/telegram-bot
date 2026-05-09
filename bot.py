@@ -85,8 +85,6 @@ async def _start_alerts_server(bot_data: dict, port: int) -> web.AppRunner:
 
 
 async def main() -> None:
-    start_logger()
-
     config = BotConfig.load()
     start_logger(config.log_level)
 

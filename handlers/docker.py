@@ -19,7 +19,11 @@ def _container_list_keyboard(containers, page: int = 0) -> InlineKeyboardMarkup:
     buttons = []
     for c in page_items:
         buttons.append(
-            [InlineKeyboardButton(f"{c.emoji} {c.name}", callback_data=f"docker:detail:{c.name}")]
+            [
+                InlineKeyboardButton(
+                    f"{c.emoji} {c.name}", callback_data=f"docker:detail:{c.short_id}"
+                )
+            ]
         )
     nav = []
     if page > 0:
@@ -32,14 +36,14 @@ def _container_list_keyboard(containers, page: int = 0) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(buttons)
 
 
-def _detail_keyboard(name: str, status: str) -> InlineKeyboardMarkup:
+def _detail_keyboard(short_id: str, status: str) -> InlineKeyboardMarkup:
     buttons = []
     if status != "running":
-        buttons.append(InlineKeyboardButton("▶️ Iniciar", callback_data=f"docker:start:{name}"))
+        buttons.append(InlineKeyboardButton("▶️ Iniciar", callback_data=f"docker:start:{short_id}"))
     if status == "running":
-        buttons.append(InlineKeyboardButton("⏹️ Detener", callback_data=f"docker:stop:{name}"))
-    buttons2 = [InlineKeyboardButton("🔄 Reiniciar", callback_data=f"docker:restart:{name}")]
-    buttons3 = [InlineKeyboardButton("📋 Logs", callback_data=f"docker:logs:{name}")]
+        buttons.append(InlineKeyboardButton("⏹️ Detener", callback_data=f"docker:stop:{short_id}"))
+    buttons2 = [InlineKeyboardButton("🔄 Reiniciar", callback_data=f"docker:restart:{short_id}")]
+    buttons3 = [InlineKeyboardButton("📋 Logs", callback_data=f"docker:logs:{short_id}")]
     buttons4 = [InlineKeyboardButton("⬅️ Lista", callback_data="docker:list:0")]
     rows = []
     if buttons:
@@ -104,51 +108,50 @@ async def docker_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         )
 
     elif action == "detail":
-        name = parts[2]
-        c = docker.get_container(name)
+        short_id = parts[2]
+        c = docker.get_container(short_id)
         if not c:
             await query.answer("Contenedor no encontrado", show_alert=True)
             return
         text = (
-            f"🐳 *{name}*\n\n"
+            f"🐳 *{c.name}*\n\n"
             f"Estado: {c.status}\n"
             f"Imagen: `{c.image.tags[0] if c.image.tags else c.image.short_id}`"
         )
         await query.edit_message_text(
             text,
             parse_mode="Markdown",
-            reply_markup=_detail_keyboard(name, c.status),
+            reply_markup=_detail_keyboard(c.short_id, c.status),
         )
 
     elif action in ("start", "stop", "restart"):
-        name = parts[2]
+        short_id = parts[2]
         if action == "start":
-            result = docker.start(name)
+            result = docker.start(short_id)
         elif action == "stop":
-            result = docker.stop(name)
+            result = docker.stop(short_id)
         else:
-            result = docker.restart(name)
+            result = docker.restart(short_id)
         await query.answer(result)
-        c = docker.get_container(name)
+        c = docker.get_container(short_id)
         if c:
             text = (
-                f"🐳 *{name}*\n\n"
+                f"🐳 *{c.name}*\n\n"
                 f"Estado: {c.status}\n"
                 f"Imagen: `{c.image.tags[0] if c.image.tags else c.image.short_id}`"
             )
             await query.edit_message_text(
                 text,
                 parse_mode="Markdown",
-                reply_markup=_detail_keyboard(name, c.status),
+                reply_markup=_detail_keyboard(c.short_id, c.status),
             )
 
     elif action == "logs":
-        name = parts[2]
-        logs = docker.logs(name, lines=30)
+        short_id = parts[2]
+        logs = docker.logs(short_id, lines=30)
         MAX = 4000
         if len(logs) > MAX:
             logs = "...\n" + logs[-MAX:]
-        await query.message.reply_text(
-            f"📋 *Logs de `{name}`* \\(últimas 30 líneas\\):\n\n```\n{logs}\n```",
-            parse_mode="MarkdownV2",
-        )
+        c = docker.get_container(short_id)
+        name = c.name if c else short_id
+        await query.message.reply_text(f"📋 Logs de {name} (últimas 30 líneas):\n\n{logs}")
