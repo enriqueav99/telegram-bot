@@ -37,7 +37,11 @@ HELP_TEXT = """
 *Servidor:*
 /status — Resumen rápido del servidor
 /metrics — Métricas detalladas del sistema
+/procs — Top procesos por CPU
 /docker — Panel de contenedores Docker
+/logs — Ver logs del servidor
+/alerts — Historial de alertas recibidas
+/alertsclear — Limpiar historial de alertas
 
 *Utilidades:*
 /speedtest — Test de velocidad de internet
@@ -50,6 +54,11 @@ HELP_TEXT = """
 /ssh — Ejecutar comandos en el servidor
 /sshadd \\<alias\\> \\<cmd\\> — Registrar comando SSH
 /sshdel \\<alias\\> — Eliminar comando SSH
+/restartai — Reiniciar el bot de IA
+
+*Asistente:*
+/ask \\<pregunta\\> — Preguntar al asistente Claude
+/askreset — Reiniciar conversación con Claude
 
 *General:*
 /panel — Panel de control \\(activar/desactivar módulos\\)
