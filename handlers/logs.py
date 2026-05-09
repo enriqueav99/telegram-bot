@@ -7,7 +7,6 @@ from telegram.ext import ContextTypes
 
 from handlers.auth import require_auth, require_module
 from modules import ssh_client
-from modules.ssh_client import SSHConfig
 
 log = logging.getLogger(__name__)
 
@@ -34,10 +33,6 @@ def _logs_keyboard() -> InlineKeyboardMarkup:
 @require_auth
 @require_module("ssh")
 async def logs_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    config: SSHConfig = context.bot_data["ssh_config"]
-    if not config.available:
-        await update.message.reply_text("❌ SSH_HOST no configurado.")
-        return
     await update.message.reply_text(
         "📄 *Logs del servidor* — selecciona un fichero:",
         parse_mode="Markdown",
@@ -60,7 +55,6 @@ async def logs_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await query.answer("Módulo SSH desactivado", show_alert=True)
         return
 
-    ssh_config: SSHConfig = context.bot_data["ssh_config"]
     parts = query.data.split(":", 2)
     action = parts[1]
 
@@ -70,7 +64,7 @@ async def logs_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         msg = await query.message.reply_text(f"⏳ Leyendo `{label}`...", parse_mode="Markdown")
         try:
             stdout, stderr, _ = await ssh_client.run(
-                ssh_config, f"tail -50 {path} 2>/dev/null || echo '(fichero no encontrado)'"
+                f"tail -50 {path} 2>/dev/null || echo '(fichero no encontrado)'"
             )
             output = stdout or stderr or "(sin salida)"
             if len(output) > MAX_OUTPUT:
@@ -80,4 +74,4 @@ async def logs_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 parse_mode="Markdown",
             )
         except Exception as exc:
-            await msg.edit_text(f"❌ Error SSH: {exc}")
+            await msg.edit_text(f"❌ Error al leer logs: {exc}")
