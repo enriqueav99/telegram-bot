@@ -21,14 +21,17 @@ from handlers import ask as ask_handler
 from handlers import digest as digest_handler
 from handlers import docker as docker_handler
 from handlers import general, notes, panel, webhooks
+from handlers import github as github_handler
 from handlers import logs as logs_handler
 from handlers import qbittorrent as qbt_handler
 from handlers import speedtest as speedtest_handler
 from handlers import ssh as ssh_handler
 from handlers import system as system_handler
+from handlers import wireguard as wireguard_handler
 from logger import start_logger
 from modules.claude_client import ClaudeClient
 from modules.docker_client import DockerClient
+from modules.github_client import GitHubClient
 from modules.qbittorrent_client import QBittorrentClient
 
 HEARTBEAT_FILE = Path("/tmp/.bot_alive")
@@ -59,6 +62,7 @@ async def main() -> None:
     docker = DockerClient()
     qbt = QBittorrentClient()
     claude = ClaudeClient()
+    github = GitHubClient(config.github_token, config.github_repo)
 
     app = Application.builder().token(config.token).build()
 
@@ -69,6 +73,7 @@ async def main() -> None:
         "bot": app.bot,
         "qbt": qbt,
         "claude": claude,
+        "github": github,
     }
     app.bot_data.update(bot_data)
 
@@ -95,6 +100,8 @@ async def main() -> None:
     app.add_handler(CommandHandler("alertsclear", alerts_history_handler.alerts_clear))
     app.add_handler(CommandHandler("ask", ask_handler.ask_cmd))
     app.add_handler(CommandHandler("askreset", ask_handler.ask_reset))
+    app.add_handler(CommandHandler("wg", wireguard_handler.wg_cmd))
+    app.add_handler(CommandHandler("ci", github_handler.ci_cmd))
 
     # Callbacks
     app.add_handler(CallbackQueryHandler(panel.panel_callback, pattern=r"^panel:"))
@@ -102,6 +109,8 @@ async def main() -> None:
     app.add_handler(CallbackQueryHandler(qbt_handler.qbt_callback, pattern=r"^qbt:"))
     app.add_handler(CallbackQueryHandler(ssh_handler.ssh_callback, pattern=r"^ssh:"))
     app.add_handler(CallbackQueryHandler(logs_handler.logs_callback, pattern=r"^logs:"))
+    app.add_handler(CallbackQueryHandler(wireguard_handler.wg_callback, pattern=r"^wg:"))
+    app.add_handler(CallbackQueryHandler(github_handler.ci_callback, pattern=r"^ci:"))
 
     # Heartbeat
     async def heartbeat(_: object) -> None:
