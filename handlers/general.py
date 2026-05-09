@@ -91,6 +91,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             f"💿 Disco: {snap.disk_used_gb:.1f}/{snap.disk_total_gb:.1f} GB "
             f"({snap.disk_percent:.0f}%)"
         )
+        lines.append(f"🌐 Red: ↑ {snap.net_sent_mb:.0f} MB  ↓ {snap.net_recv_mb:.0f} MB")
     else:
         lines.append("📊 Métricas: _módulo desactivado_")
 

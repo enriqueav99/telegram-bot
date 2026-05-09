@@ -27,6 +27,7 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "digest": False,
     "qbittorrent": False,
     "ssh": False,
+    "ask": False,
 }
 
 FEATURE_LABELS: dict[str, str] = {
@@ -42,6 +43,7 @@ FEATURE_LABELS: dict[str, str] = {
     "digest": "🌅 Resumen diario",
     "qbittorrent": "🧲 qBittorrent",
     "ssh": "🖥️ SSH",
+    "ask": "🤖 Claude (API)",
 }
 
 

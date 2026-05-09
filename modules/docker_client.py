@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 log = logging.getLogger(__name__)
 
@@ -75,6 +76,42 @@ class DockerClient:
         except Exception:
             return None
 
+    def container_detail(self, short_id: str) -> dict:
+        """Returns extra detail: memory_mb, uptime_str, image_tag."""
+        c = self.get_container(short_id)
+        if not c:
+            return {}
+        result: dict = {}
+        try:
+            tag = c.image.tags[0] if c.image.tags else c.image.short_id
+            result["image_tag"] = tag
+        except Exception:
+            result["image_tag"] = short_id
+
+        if c.status == "running":
+            try:
+                started = c.attrs.get("State", {}).get("StartedAt", "")
+                if started:
+                    started_dt = datetime.fromisoformat(started.replace("Z", "+00:00"))
+                    delta = datetime.now(UTC) - started_dt
+                    hours, rem = divmod(int(delta.total_seconds()), 3600)
+                    minutes = rem // 60
+                    result["uptime"] = f"{hours}h {minutes}m" if hours else f"{minutes}m"
+            except Exception:
+                pass
+            try:
+                stats = c.stats(stream=False)
+                mem = stats.get("memory_stats", {})
+                used = mem.get("usage", 0)
+                limit = mem.get("limit", 0)
+                if used and limit:
+                    result["mem_mb"] = used / 1024**2
+                    result["mem_limit_mb"] = limit / 1024**2
+            except Exception:
+                pass
+
+        return result
+
     def start(self, name: str) -> str:
         c = self.get_container(name)
         if not c:
@@ -116,7 +153,6 @@ class DockerClient:
             return f"❌ Error obteniendo logs de `{name}`: {e}"
 
     def running_count(self) -> tuple[int, int]:
-        """Returns (running, total)."""
         containers = self.list_containers(all=True)
         running = sum(1 for c in containers if c.status == "running")
         return running, len(containers)
