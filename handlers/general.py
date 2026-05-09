@@ -1,12 +1,32 @@
 from __future__ import annotations
 
+import json
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from handlers.auth import require_auth
 from modules import docker_client, system_client
+
+CLAUDE_BOT_STATUS_FILE = Path("/app/data/claude-bot-status.json")
+
+
+def _claude_bot_status() -> str:
+    try:
+        data = json.loads(CLAUDE_BOT_STATUS_FILE.read_text())
+        updated = datetime.fromisoformat(data["updated_at"])
+        age_s = int((datetime.now(timezone.utc) - updated).total_seconds())
+        if age_s > 120:
+            return f"🤖 Claude Bot: ⚠️ sin actividad hace {age_s}s"
+        sessions = data.get("session_count", 0)
+        return f"🤖 Claude Bot: ✅ activo  ({sessions} sesiones)"
+    except FileNotFoundError:
+        return "🤖 Claude Bot: ❓ sin datos"
+    except Exception:
+        return "🤖 Claude Bot: ❌ error leyendo estado"
 
 log = logging.getLogger(__name__)
 
@@ -84,5 +104,8 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             lines.append("🐳 Docker: _socket no disponible_")
     else:
         lines.append("🐳 Docker: _módulo desactivado_")
+
+    lines.append("")
+    lines.append(_claude_bot_status())
 
     await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
