@@ -1,4 +1,5 @@
 """Persistent store for recent webhook alerts."""
+
 from __future__ import annotations
 
 import json
@@ -25,13 +26,15 @@ def _save(alerts: list[dict]) -> None:
 
 def record(source: str, name: str, status: str, summary: str) -> None:
     alerts = _load()
-    alerts.append({
-        "ts": datetime.now(UTC).isoformat(),
-        "source": source,
-        "name": name,
-        "status": status,
-        "summary": summary,
-    })
+    alerts.append(
+        {
+            "ts": datetime.now(UTC).isoformat(),
+            "source": source,
+            "name": name,
+            "status": status,
+            "summary": summary,
+        }
+    )
     _save(alerts[-MAX_ALERTS:])
 
 

@@ -98,10 +98,12 @@ def top_processes(n: int = 10) -> list[ProcessInfo]:
     procs = []
     for p in psutil.process_iter(["pid", "name", "cpu_percent", "memory_info"]):
         with contextlib.suppress(psutil.NoSuchProcess, psutil.AccessDenied):
-            procs.append(ProcessInfo(
-                pid=p.info["pid"],
-                name=p.info["name"] or "?",
-                cpu_percent=p.info["cpu_percent"] or 0.0,
-                mem_mb=(p.info["memory_info"].rss if p.info["memory_info"] else 0) / 1024**2,
-            ))
+            procs.append(
+                ProcessInfo(
+                    pid=p.info["pid"],
+                    name=p.info["name"] or "?",
+                    cpu_percent=p.info["cpu_percent"] or 0.0,
+                    mem_mb=(p.info["memory_info"].rss if p.info["memory_info"] else 0) / 1024**2,
+                )
+            )
     return sorted(procs, key=lambda p: p.cpu_percent, reverse=True)[:n]
