@@ -22,6 +22,11 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "radarr": False,
     "sonarr": False,
     "crowdsec": False,
+    "speedtest": True,
+    "notes": True,
+    "digest": False,
+    "qbittorrent": False,
+    "ssh": False,
 }
 
 FEATURE_LABELS: dict[str, str] = {
@@ -32,6 +37,11 @@ FEATURE_LABELS: dict[str, str] = {
     "radarr": "🎬 Radarr",
     "sonarr": "📺 Sonarr",
     "crowdsec": "🛡️ CrowdSec",
+    "speedtest": "🌐 Speedtest",
+    "notes": "📝 Notas",
+    "digest": "🌅 Resumen diario",
+    "qbittorrent": "🧲 qBittorrent",
+    "ssh": "🖥️ SSH",
 }
 
 
