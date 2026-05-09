@@ -18,12 +18,20 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "docker": True,
     "system": True,
     "alerts": False,
+    "grafana": False,
+    "radarr": False,
+    "sonarr": False,
+    "crowdsec": False,
 }
 
 FEATURE_LABELS: dict[str, str] = {
     "docker": "🐳 Docker Monitor",
     "system": "📊 Métricas del sistema",
     "alerts": "🔔 Alertmanager",
+    "grafana": "📈 Grafana Alerts",
+    "radarr": "🎬 Radarr",
+    "sonarr": "📺 Sonarr",
+    "crowdsec": "🛡️ CrowdSec",
 }
 
 
