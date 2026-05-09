@@ -1,0 +1,39 @@
+name: docker-build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - "requirements.txt"
+      - "bot.py"
+      - "config.py"
+      - "handlers/**"
+      - "modules/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: telegram-bot:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test (import modules)
+        run: |
+          docker run --rm \
+            -e TELEGRAM_BOT_TOKEN=dummy \
+            -e ALLOWED_USERS=123 \
+            --entrypoint python \
+            telegram-bot:ci -c "import bot; print('imports OK')"
