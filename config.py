@@ -28,6 +28,8 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "qbittorrent": False,
     "ssh": False,
     "ask": False,
+    "wireguard": False,
+    "github_actions": False,
 }
 
 FEATURE_LABELS: dict[str, str] = {
@@ -44,6 +46,8 @@ FEATURE_LABELS: dict[str, str] = {
     "qbittorrent": "🧲 qBittorrent",
     "ssh": "🖥️ SSH",
     "ask": "🤖 Claude (API)",
+    "wireguard": "🔒 WireGuard VPN",
+    "github_actions": "🔧 GitHub Actions",
 }
 
 
@@ -54,6 +58,8 @@ class BotConfig:
     alerts_port: int
     alerts_chat_id: int | None
     log_level: str
+    github_token: str
+    github_repo: str
 
     @classmethod
     def load(cls) -> BotConfig:
@@ -72,6 +78,8 @@ class BotConfig:
             alerts_port=int(os.getenv("ALERTS_PORT", "9091")),
             alerts_chat_id=int(raw_chat) if raw_chat else None,
             log_level=os.getenv("LOG_LEVEL", "INFO"),
+            github_token=os.getenv("GITHUB_TOKEN", ""),
+            github_repo=os.getenv("GITHUB_REPO", ""),
         )
 
 
