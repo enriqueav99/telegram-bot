@@ -40,7 +40,9 @@ def _detail_keyboard(t: Torrent) -> InlineKeyboardMarkup:
     else:
         action_row.append(InlineKeyboardButton("⏸ Pausar", callback_data=f"qbt:pause:{t.hash}"))
     action_row.append(InlineKeyboardButton("🗑 Eliminar", callback_data=f"qbt:del:{t.hash}"))
-    return InlineKeyboardMarkup([action_row, [InlineKeyboardButton("⬅️ Lista", callback_data="qbt:list:0")]])
+    return InlineKeyboardMarkup(
+        [action_row, [InlineKeyboardButton("⬅️ Lista", callback_data="qbt:list:0")]]
+    )
 
 
 def _detail_text(t: Torrent) -> str:

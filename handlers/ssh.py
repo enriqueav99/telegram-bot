@@ -33,8 +33,7 @@ async def ssh_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     commands = ssh_client.load_commands()
     if not commands:
         await update.message.reply_text(
-            "📭 No hay comandos configurados.\n\n"
-            "Añade uno con:\n`/sshadd <alias> <comando>`",
+            "📭 No hay comandos configurados.\n\nAñade uno con:\n`/sshadd <alias> <comando>`",
             parse_mode="Markdown",
         )
         return
@@ -61,7 +60,9 @@ async def sshadd_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         return
     command = " ".join(args[1:])
     ssh_client.add_command(alias, command)
-    await update.message.reply_text(f"✅ Comando `{alias}` guardado:\n`{command}`", parse_mode="Markdown")
+    await update.message.reply_text(
+        f"✅ Comando `{alias}` guardado:\n`{command}`", parse_mode="Markdown"
+    )
 
 
 @require_auth
@@ -75,7 +76,9 @@ async def sshdel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     if ssh_client.remove_command(alias):
         await update.message.reply_text(f"🗑️ Comando `{alias}` eliminado.", parse_mode="Markdown")
     else:
-        await update.message.reply_text(f"❌ No existe el comando `{alias}`.", parse_mode="Markdown")
+        await update.message.reply_text(
+            f"❌ No existe el comando `{alias}`.", parse_mode="Markdown"
+        )
 
 
 async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
