@@ -18,6 +18,10 @@ Usa `/help` en Telegram para ver todos los comandos disponibles.
 | 🐳 **Docker Monitor** | Lista todos los contenedores con su estado, y permite hacer start/stop/restart y ver logs directamente desde Telegram con botones inline. |
 | 📊 **Métricas del sistema** | CPU, RAM, disco y uptime con barra de progreso visual. Datos en tiempo real vía psutil. |
 | 🔔 **Alertmanager** | Endpoint HTTP que recibe webhooks de Prometheus Alertmanager y reenvía las alertas al chat configurado. |
+| 📈 **Grafana Alerts** | Endpoint HTTP para Grafana Unified Alerting (y formato legacy). Compatible con el mismo `ALERTS_CHAT_ID`. |
+| 🎬 **Radarr** | Notificaciones de búsqueda, descarga y adición de películas vía webhook. |
+| 📺 **Sonarr** | Notificaciones de búsqueda, descarga y adición de series vía webhook. |
+| 🛡️ **CrowdSec** | Alertas de seguridad del IDS/IPS: IP baneadas con escenario y duración. |
 | 🤖 **Panel de control** | Activa o desactiva cualquier módulo desde el propio chat sin reiniciar el bot. El estado se persiste en disco. |
 | 🔒 **Seguridad** | Whitelist de usuarios por ID de Telegram. Sin whitelist configurada, el bot rechaza a cualquier usuario desconocido. |
 
@@ -76,17 +80,14 @@ Activa o desactiva los módulos:
 
 ---
 
-## Alertmanager
+## Webhooks
 
-Cuando el módulo `alerts` está activo, el bot expone un endpoint HTTP en el puerto configurado:
+El bot expone un servidor HTTP en el puerto configurado (`ALERTS_PORT`, default `9091`). Activa cada módulo desde `/panel` antes de usarlo. Todos los mensajes se envían al chat configurado en `ALERTS_CHAT_ID`.
 
-```
-POST http://<host>:9091/alerts
-```
-
-Añade esto a tu `alertmanager.yml` para enviar alertas al bot:
+### Alertmanager
 
 ```yaml
+# alertmanager.yml
 receivers:
   - name: telegram
     webhook_configs:
@@ -94,13 +95,67 @@ receivers:
         send_resolved: true
 ```
 
+### Grafana
+
+En Grafana: **Alerting → Contact points → Add contact point → Webhook**
+
+- URL: `http://telegram-bot:9091/grafana`
+- Compatible con Unified Alerting y el formato legacy.
+
+### Radarr
+
+En Radarr: **Settings → Connect → Add → Webhook**
+
+- Notification Triggers: `On Grab`, `On Download`, `On Movie Added`, `On Movie Delete`
+- URL: `http://telegram-bot:9091/radarr`
+
+### Sonarr
+
+En Sonarr: **Settings → Connect → Add → Webhook**
+
+- Notification Triggers: `On Grab`, `On Download`, `On Series Add`, `On Series Delete`
+- URL: `http://telegram-bot:9091/sonarr`
+
+### CrowdSec
+
+En `/etc/crowdsec/notifications/http.yaml`:
+
+```yaml
+type: http
+name: telegram_bot
+log_level: info
+format: |
+  {{range .}}{"scenario": "{{.Scenario}}", "source": {"ip": "{{.Source.IP}}", "as_name": "{{.Source.AsName}}"}, "decisions": [{{range .Decisions}}{"type": "{{.Type}}", "duration": "{{.Duration}}"}{{end}}]}
+  {{end}}
+url: http://telegram-bot:9091/crowdsec
+method: POST
+headers:
+  Content-Type: application/json
+```
+
+Activa el notifier en `/etc/crowdsec/profiles.yaml`.
+
+### Watchtower (nativo)
+
+Watchtower envía las notificaciones directamente a Telegram sin pasar por el webhook del bot. Añade en `composes/apps/watchtower/.env`:
+
+```env
+WATCHTOWER_NOTIFICATIONS=telegram
+WATCHTOWER_NOTIFICATION_TELEGRAM_TOKEN=<tu_bot_token>
+WATCHTOWER_NOTIFICATION_TELEGRAM_CHAT_ID=<chat_id>
+```
+
+### Uptime Kuma (nativo)
+
+En Uptime Kuma: **Settings → Notifications → Add Notification → Telegram**. Introduce el bot token y el chat ID.
+
 ---
 
 ## Arquitectura
 
 ```
 telegram-bot/
-├── bot.py                  # Entry point + servidor webhook de Alertmanager (aiohttp)
+├── bot.py                  # Entry point + servidor webhook (aiohttp)
 ├── config.py               # BotConfig (env vars) + FeatureFlags (data/features.json)
 ├── logger.py
 ├── healthcheck.py          # Healthcheck via heartbeat en /tmp/.bot_alive
@@ -112,12 +167,14 @@ telegram-bot/
 │   ├── general.py          # /start, /help, /status
 │   ├── panel.py            # /panel + callbacks de toggle
 │   ├── docker.py           # /docker + callbacks de contenedores
-│   └── system.py           # /metrics
+│   ├── system.py           # /metrics
+│   └── webhooks.py         # Handlers HTTP: alertmanager, grafana, radarr, sonarr, crowdsec
 └── tests/
     ├── test_config.py
     ├── test_auth.py
     ├── test_docker_client.py
-    └── test_system_client.py
+    ├── test_system_client.py
+    └── test_webhooks.py
 ```
 
 El bot monta el socket de Docker en **read-only** (`/var/run/docker.sock:ro`). Si necesitas start/stop/restart elimina el `:ro` del `docker-compose.yaml`.

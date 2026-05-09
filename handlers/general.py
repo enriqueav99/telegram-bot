@@ -22,6 +22,14 @@ HELP_TEXT = """
 /help — Esta ayuda
 
 _Los módulos desactivados no responden sus comandos\\. Actívalos desde /panel\\._
+
+*Webhooks \\(puerto 9091\\):*
+
+`POST /alerts` — Alertmanager
+`POST /grafana` — Grafana Unified Alerting
+`POST /radarr` — Radarr \\(películas\\)
+`POST /sonarr` — Sonarr \\(series\\)
+`POST /crowdsec` — CrowdSec
 """
 
 
