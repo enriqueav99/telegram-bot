@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import Any, Callable, Coroutine
+from typing import TYPE_CHECKING, Any, Callable, Coroutine
 
-from telegram import Update
-from telegram.ext import ContextTypes
+if TYPE_CHECKING:
+    from telegram import Update
+    from telegram.ext import ContextTypes
 
 log = logging.getLogger(__name__)
 
