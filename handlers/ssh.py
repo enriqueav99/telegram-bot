@@ -7,7 +7,6 @@ from telegram.ext import ContextTypes
 
 from handlers.auth import require_auth, require_module
 from modules import ssh_client
-from modules.ssh_client import SSHConfig
 
 log = logging.getLogger(__name__)
 
@@ -27,10 +26,6 @@ def _commands_keyboard(commands: dict[str, str]) -> InlineKeyboardMarkup:
 @require_auth
 @require_module("ssh")
 async def ssh_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    config: SSHConfig = context.bot_data["ssh_config"]
-    if not config.available:
-        await update.message.reply_text("❌ SSH_HOST no configurado.")
-        return
     commands = ssh_client.load_commands()
     if not commands:
         await update.message.reply_text(
@@ -39,7 +34,7 @@ async def ssh_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         return
     await update.message.reply_text(
-        f"🖥️ *SSH — {config.host}*\nSelecciona un comando:",
+        "🖥️ *Comandos del servidor*\nSelecciona un comando:",
         parse_mode="Markdown",
         reply_markup=_commands_keyboard(commands),
     )
@@ -85,11 +80,6 @@ async def sshdel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 @require_auth
 @require_module("ssh")
 async def restartai_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    config: SSHConfig = context.bot_data["ssh_config"]
-    if not config.available:
-        await update.message.reply_text("❌ SSH_HOST no configurado.")
-        return
-
     commands = ssh_client.load_commands()
     command = commands.get(AI_BOT_ALIAS)
     if not command:
@@ -102,13 +92,13 @@ async def restartai_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     msg = await update.message.reply_text("♻️ Reiniciando bot de IA...")
     try:
-        _, _, exit_code = await ssh_client.run(config, command)
+        _, stderr, exit_code = await ssh_client.run(command)
         if exit_code == 0:
             await msg.edit_text("✅ Comando de reinicio ejecutado.")
         else:
             await msg.edit_text(f"⚠️ Comando ejecutado con código de salida {exit_code}.")
     except Exception as exc:
-        await msg.edit_text(f"❌ Error SSH: {exc}")
+        await msg.edit_text(f"❌ Error al ejecutar: {exc}")
 
 
 async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -126,7 +116,6 @@ async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await query.answer("Módulo SSH desactivado", show_alert=True)
         return
 
-    ssh_config: SSHConfig = context.bot_data["ssh_config"]
     parts = query.data.split(":", 2)
     action = parts[1]
 
@@ -136,7 +125,7 @@ async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             await query.edit_message_text("📭 No hay comandos configurados.")
             return
         await query.edit_message_text(
-            f"🖥️ *SSH — {ssh_config.host}*\nSelecciona un comando:",
+            "🖥️ *Comandos del servidor*\nSelecciona un comando:",
             parse_mode="Markdown",
             reply_markup=_commands_keyboard(commands),
         )
@@ -153,7 +142,7 @@ async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         msg = await query.message.reply_text(f"⏳ Ejecutando `{alias}`…", parse_mode="Markdown")
 
         try:
-            stdout, stderr, exit_code = await ssh_client.run(ssh_config, command)
+            stdout, stderr, exit_code = await ssh_client.run(command)
             output = stdout or stderr or "(sin salida)"
             if len(output) > MAX_OUTPUT:
                 output = "…\n" + output[-MAX_OUTPUT:]
@@ -163,5 +152,5 @@ async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 parse_mode="Markdown",
             )
         except Exception as exc:
-            log.exception("SSH run failed for alias=%s", alias)
-            await msg.edit_text(f"❌ Error SSH: {exc}")
+            log.exception("Shell run failed for alias=%s", alias)
+            await msg.edit_text(f"❌ Error al ejecutar: {exc}")
