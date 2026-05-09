@@ -18,14 +18,12 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "docker": True,
     "system": True,
     "alerts": False,
-    "goose": False,
 }
 
 FEATURE_LABELS: dict[str, str] = {
     "docker": "🐳 Docker Monitor",
     "system": "📊 Métricas del sistema",
     "alerts": "🔔 Alertmanager",
-    "goose": "🪿 Goose AI",
 }
 
 

@@ -19,7 +19,6 @@ from telegram.ext import (
 from config import BotConfig, FeatureFlags
 from handlers import docker as docker_handler
 from handlers import general, panel
-from handlers import goose as goose_handler
 from handlers import system as system_handler
 from logger import start_logger
 from modules.docker_client import DockerClient
@@ -109,7 +108,6 @@ async def main() -> None:
     app.add_handler(CommandHandler("metrics", system_handler.metrics))
     app.add_handler(CommandHandler("docker", docker_handler.docker_list))
     app.add_handler(CommandHandler("panel", panel.panel))
-    app.add_handler(CommandHandler("goose", goose_handler.goose_cmd))
 
     # Callbacks
     app.add_handler(CallbackQueryHandler(panel.panel_callback, pattern=r"^panel:"))
