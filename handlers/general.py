@@ -18,6 +18,7 @@ HELP_TEXT = """
 /status — Resumen rápido del servidor
 /metrics — Métricas detalladas del sistema
 /docker — Panel de contenedores Docker
+/goose <pregunta> — Pregunta algo a Goose AI
 /panel — Panel de control \\(activar/desactivar módulos\\)
 /help — Esta ayuda
 
