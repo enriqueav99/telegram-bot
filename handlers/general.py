@@ -28,6 +28,7 @@ def _claude_bot_status() -> str:
     except Exception:
         return "🤖 Claude Bot: ❌ error leyendo estado"
 
+
 log = logging.getLogger(__name__)
 
 HELP_TEXT = """

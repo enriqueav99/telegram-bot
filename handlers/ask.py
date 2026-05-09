@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 @require_module("ask")
 async def ask_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     from modules.claude_client import ClaudeClient
+
     client: ClaudeClient = context.bot_data["claude"]
 
     if not client.available:
@@ -46,6 +47,7 @@ async def ask_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 @require_module("ask")
 async def ask_reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     from modules.claude_client import ClaudeClient
+
     client: ClaudeClient = context.bot_data["claude"]
     chat_id = str(update.effective_chat.id)
     client.reset(chat_id)

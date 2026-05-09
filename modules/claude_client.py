@@ -21,7 +21,9 @@ class ClaudeClient:
         if api_key:
             import anthropic
 
-            self._client: anthropic.AsyncAnthropic | None = anthropic.AsyncAnthropic(api_key=api_key)
+            self._client: anthropic.AsyncAnthropic | None = anthropic.AsyncAnthropic(
+                api_key=api_key
+            )
         else:
             self._client = None
         self._history: dict[str, list[dict]] = self._load()
@@ -58,7 +60,7 @@ class ClaudeClient:
             if len(output) > SHELL_OUTPUT_LIMIT:
                 output = output[:SHELL_OUTPUT_LIMIT] + "\n... (salida truncada)"
             return output or "(sin salida)"
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return f"Error: comando superó el límite de {SHELL_TIMEOUT}s"
         except Exception as e:
             return f"Error: {e}"
@@ -68,8 +70,7 @@ class ClaudeClient:
             return content
         if isinstance(content, list):
             return [
-                block.model_dump() if hasattr(block, "model_dump") else block
-                for block in content
+                block.model_dump() if hasattr(block, "model_dump") else block for block in content
             ]
         return content
 

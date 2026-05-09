@@ -69,7 +69,9 @@ async def logs_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         label, path = LOG_FILES[idx]
         msg = await query.message.reply_text(f"⏳ Leyendo `{label}`...", parse_mode="Markdown")
         try:
-            stdout, stderr, _ = await ssh_client.run(ssh_config, f"tail -50 {path} 2>/dev/null || echo '(fichero no encontrado)'")
+            stdout, stderr, _ = await ssh_client.run(
+                ssh_config, f"tail -50 {path} 2>/dev/null || echo '(fichero no encontrado)'"
+            )
             output = stdout or stderr or "(sin salida)"
             if len(output) > MAX_OUTPUT:
                 output = "…\n" + output[-MAX_OUTPUT:]
