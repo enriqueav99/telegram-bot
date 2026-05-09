@@ -16,14 +16,17 @@ from telegram.ext import (
 )
 
 from config import BotConfig, FeatureFlags
+from handlers import alerts_history as alerts_history_handler
+from handlers import ask as ask_handler
 from handlers import digest as digest_handler
 from handlers import docker as docker_handler
-from handlers import general, notes, panel, webhooks
+from handlers import general, logs as logs_handler, notes, panel, webhooks
 from handlers import qbittorrent as qbt_handler
 from handlers import speedtest as speedtest_handler
 from handlers import ssh as ssh_handler
 from handlers import system as system_handler
 from logger import start_logger
+from modules.claude_client import ClaudeClient
 from modules.docker_client import DockerClient
 from modules.qbittorrent_client import QBittorrentClient
 from modules.ssh_client import SSHConfig
@@ -56,6 +59,7 @@ async def main() -> None:
     docker = DockerClient()
     qbt = QBittorrentClient()
     ssh_config = SSHConfig.load()
+    claude = ClaudeClient()
 
     app = Application.builder().token(config.token).build()
 
@@ -66,6 +70,7 @@ async def main() -> None:
         "bot": app.bot,
         "qbt": qbt,
         "ssh_config": ssh_config,
+        "claude": claude,
     }
     app.bot_data.update(bot_data)
 
@@ -85,12 +90,19 @@ async def main() -> None:
     app.add_handler(CommandHandler("ssh", ssh_handler.ssh_cmd))
     app.add_handler(CommandHandler("sshadd", ssh_handler.sshadd_cmd))
     app.add_handler(CommandHandler("sshdel", ssh_handler.sshdel_cmd))
+    app.add_handler(CommandHandler("procs", system_handler.procs))
+    app.add_handler(CommandHandler("logs", logs_handler.logs_cmd))
+    app.add_handler(CommandHandler("alerts", alerts_history_handler.alerts_cmd))
+    app.add_handler(CommandHandler("alertsclear", alerts_history_handler.alerts_clear))
+    app.add_handler(CommandHandler("ask", ask_handler.ask_cmd))
+    app.add_handler(CommandHandler("askreset", ask_handler.ask_reset))
 
     # Callbacks
     app.add_handler(CallbackQueryHandler(panel.panel_callback, pattern=r"^panel:"))
     app.add_handler(CallbackQueryHandler(docker_handler.docker_callback, pattern=r"^docker:"))
     app.add_handler(CallbackQueryHandler(qbt_handler.qbt_callback, pattern=r"^qbt:"))
     app.add_handler(CallbackQueryHandler(ssh_handler.ssh_callback, pattern=r"^ssh:"))
+    app.add_handler(CallbackQueryHandler(logs_handler.logs_callback, pattern=r"^logs:"))
 
     # Heartbeat
     async def heartbeat(_: object) -> None:

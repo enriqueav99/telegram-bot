@@ -9,6 +9,7 @@ from aiohttp import web
 from telegram import Bot
 
 from config import BotConfig, FeatureFlags
+from modules import alert_history
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ async def alertmanager(request: web.Request) -> web.Response:
         if description:
             lines.append(description)
 
+        alert_history.record("alertmanager", name, status.lower(), summary)
         await _send(bot, config.alerts_chat_id, "\n".join(lines))
 
     return web.Response(status=200, text="ok")
@@ -90,6 +92,7 @@ async def grafana(request: web.Request) -> web.Response:
             if description:
                 lines.append(description)
 
+            alert_history.record("grafana", name, status.lower(), summary)
             await _send(bot, config.alerts_chat_id, "\n".join(lines))
     else:
         title = body.get("title", "Alerta de Grafana")

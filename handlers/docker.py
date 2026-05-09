@@ -113,13 +113,18 @@ async def docker_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         if not c:
             await query.answer("Contenedor no encontrado", show_alert=True)
             return
-        text = (
-            f"🐳 *{c.name}*\n\n"
-            f"Estado: {c.status}\n"
-            f"Imagen: `{c.image.tags[0] if c.image.tags else c.image.short_id}`"
-        )
+        detail = docker.container_detail(short_id)
+        lines = [
+            f"🐳 *{c.name}*\n",
+            f"Estado: {c.status}",
+            f"Imagen: `{detail.get('image_tag', c.short_id)}`",
+        ]
+        if "uptime" in detail:
+            lines.append(f"Uptime: {detail['uptime']}")
+        if "mem_mb" in detail:
+            lines.append(f"Memoria: {detail['mem_mb']:.0f} / {detail['mem_limit_mb']:.0f} MB")
         await query.edit_message_text(
-            text,
+            "\n".join(lines),
             parse_mode="Markdown",
             reply_markup=_detail_keyboard(c.short_id, c.status),
         )
