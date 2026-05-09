@@ -91,6 +91,7 @@ async def main() -> None:
     app.add_handler(CommandHandler("ssh", ssh_handler.ssh_cmd))
     app.add_handler(CommandHandler("sshadd", ssh_handler.sshadd_cmd))
     app.add_handler(CommandHandler("sshdel", ssh_handler.sshdel_cmd))
+    app.add_handler(CommandHandler("restartai", ssh_handler.restartai_cmd))
     app.add_handler(CommandHandler("procs", system_handler.procs))
     app.add_handler(CommandHandler("logs", logs_handler.logs_cmd))
     app.add_handler(CommandHandler("alerts", alerts_history_handler.alerts_cmd))
