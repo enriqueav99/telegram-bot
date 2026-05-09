@@ -106,6 +106,8 @@ def _snap(
     disk_used: float = 50.0,
     disk_total: float = 200.0,
     uptime: float = 3600.0,
+    net_sent_mb: float = 100.0,
+    net_recv_mb: float = 200.0,
 ) -> SystemSnapshot:
     ram_pct = ram_used / ram_total * 100
     disk_pct = disk_used / disk_total * 100
@@ -119,6 +121,8 @@ def _snap(
         disk_percent=disk_pct,
         uptime_seconds=uptime,
         load_avg=(0.5, 0.4, 0.3),
+        net_sent_mb=net_sent_mb,
+        net_recv_mb=net_recv_mb,
     )
 
 
@@ -134,6 +138,10 @@ def _mock_psutil():
     disk.total = 200 * GB
     disk.percent = 25.0
 
+    net = MagicMock()
+    net.bytes_sent = 100 * 1024**2
+    net.bytes_recv = 200 * 1024**2
+
     return patch.multiple(
         "modules.system_client.psutil",
         cpu_percent=MagicMock(return_value=25.0),
@@ -141,4 +149,5 @@ def _mock_psutil():
         disk_usage=MagicMock(return_value=disk),
         boot_time=MagicMock(return_value=0.0),
         getloadavg=MagicMock(return_value=(0.5, 0.4, 0.3)),
+        net_io_counters=MagicMock(return_value=net),
     )

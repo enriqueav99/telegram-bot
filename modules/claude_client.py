@@ -58,7 +58,7 @@ class ClaudeClient:
             if len(output) > SHELL_OUTPUT_LIMIT:
                 output = output[:SHELL_OUTPUT_LIMIT] + "\n... (salida truncada)"
             return output or "(sin salida)"
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return f"Error: comando superó el límite de {SHELL_TIMEOUT}s"
         except Exception as e:
             return f"Error: {e}"

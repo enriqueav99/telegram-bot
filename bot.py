@@ -20,7 +20,8 @@ from handlers import alerts_history as alerts_history_handler
 from handlers import ask as ask_handler
 from handlers import digest as digest_handler
 from handlers import docker as docker_handler
-from handlers import general, logs as logs_handler, notes, panel, webhooks
+from handlers import general, notes, panel, webhooks
+from handlers import logs as logs_handler
 from handlers import qbittorrent as qbt_handler
 from handlers import speedtest as speedtest_handler
 from handlers import ssh as ssh_handler
