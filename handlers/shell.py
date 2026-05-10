@@ -1,3 +1,5 @@
+"""Comandos de shell registrados ejecutables desde Telegram."""
+
 from __future__ import annotations
 
 import logging
@@ -6,7 +8,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from handlers.auth import require_auth, require_module
-from modules import ssh_client
+from modules import shell_client
 
 log = logging.getLogger(__name__)
 
@@ -16,37 +18,37 @@ AI_BOT_ALIAS = "ai-bot"
 
 def _commands_keyboard(commands: dict[str, str]) -> InlineKeyboardMarkup:
     buttons = [
-        [InlineKeyboardButton(f"▶️ {alias}", callback_data=f"ssh:run:{alias}")]
+        [InlineKeyboardButton(f"▶️ {alias}", callback_data=f"cmd:run:{alias}")]
         for alias in sorted(commands)
     ]
-    buttons.append([InlineKeyboardButton("🔄 Actualizar", callback_data="ssh:list")])
+    buttons.append([InlineKeyboardButton("🔄 Actualizar", callback_data="cmd:list")])
     return InlineKeyboardMarkup(buttons)
 
 
 @require_auth
-@require_module("ssh")
-async def ssh_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    commands = ssh_client.load_commands()
+@require_module("shell")
+async def cmd_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    commands = shell_client.load_commands()
     if not commands:
         await update.message.reply_text(
-            "📭 No hay comandos configurados.\n\nAñade uno con:\n`/sshadd <alias> <comando>`",
+            "📭 No hay comandos registrados.\n\nAñade uno con:\n`/cmdadd <alias> <comando>`",
             parse_mode="Markdown",
         )
         return
     await update.message.reply_text(
-        "🖥️ *Comandos del servidor*\nSelecciona un comando:",
+        "🖥️ *Comandos del servidor*\nSelecciona un comando para ejecutarlo:",
         parse_mode="Markdown",
         reply_markup=_commands_keyboard(commands),
     )
 
 
 @require_auth
-@require_module("ssh")
-async def sshadd_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+@require_module("shell")
+async def cmdadd_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     args = context.args or []
     if len(args) < 2:
         await update.message.reply_text(
-            "Uso: `/sshadd <alias> <comando>`\n\nEjemplo:\n`/sshadd logs-nginx tail -n 50 /var/log/nginx/error.log`",
+            "Uso: `/cmdadd <alias> <comando>`\n\nEjemplo:\n`/cmdadd logs-nginx tail -n 50 /var/log/nginx/error.log`",
             parse_mode="Markdown",
         )
         return
@@ -55,21 +57,21 @@ async def sshadd_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text("❌ El alias no puede tener más de 30 caracteres.")
         return
     command = " ".join(args[1:])
-    ssh_client.add_command(alias, command)
+    shell_client.add_command(alias, command)
     await update.message.reply_text(
         f"✅ Comando `{alias}` guardado:\n`{command}`", parse_mode="Markdown"
     )
 
 
 @require_auth
-@require_module("ssh")
-async def sshdel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+@require_module("shell")
+async def cmddel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     args = context.args or []
     if not args:
-        await update.message.reply_text("Uso: `/sshdel <alias>`", parse_mode="Markdown")
+        await update.message.reply_text("Uso: `/cmddel <alias>`", parse_mode="Markdown")
         return
     alias = args[0]
-    if ssh_client.remove_command(alias):
+    if shell_client.remove_command(alias):
         await update.message.reply_text(f"🗑️ Comando `{alias}` eliminado.", parse_mode="Markdown")
     else:
         await update.message.reply_text(
@@ -78,30 +80,33 @@ async def sshdel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
 
 @require_auth
-@require_module("ssh")
+@require_module("shell")
 async def restartai_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    commands = ssh_client.load_commands()
+    commands = shell_client.load_commands()
     command = commands.get(AI_BOT_ALIAS)
     if not command:
         await update.message.reply_text(
             f"❌ Sin comando de reinicio configurado.\n\n"
-            f"Configúralo una vez con:\n`/sshadd {AI_BOT_ALIAS} <tu comando>`",
+            f"Configúralo una vez con:\n`/cmdadd {AI_BOT_ALIAS} <comando>`",
             parse_mode="Markdown",
         )
         return
 
     msg = await update.message.reply_text("♻️ Reiniciando bot de IA...")
     try:
-        _, stderr, exit_code = await ssh_client.run(command)
+        _, stderr, exit_code = await shell_client.run(command)
         if exit_code == 0:
             await msg.edit_text("✅ Comando de reinicio ejecutado.")
         else:
-            await msg.edit_text(f"⚠️ Comando ejecutado con código de salida {exit_code}.")
+            await msg.edit_text(
+                f"⚠️ Comando ejecutado con código de salida {exit_code}.\n`{stderr[:200]}`",
+                parse_mode="Markdown",
+            )
     except Exception as exc:
         await msg.edit_text(f"❌ Error al ejecutar: {exc}")
 
 
-async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def cmd_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
 
@@ -112,27 +117,27 @@ async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if config_bot.allowed_users and user.id not in config_bot.allowed_users:
         await query.answer("⛔ Sin permiso", show_alert=True)
         return
-    if not features.is_enabled("ssh"):
-        await query.answer("Módulo SSH desactivado", show_alert=True)
+    if not features.is_enabled("shell"):
+        await query.answer("Módulo de comandos desactivado", show_alert=True)
         return
 
     parts = query.data.split(":", 2)
     action = parts[1]
 
     if action == "list":
-        commands = ssh_client.load_commands()
+        commands = shell_client.load_commands()
         if not commands:
-            await query.edit_message_text("📭 No hay comandos configurados.")
+            await query.edit_message_text("📭 No hay comandos registrados.")
             return
         await query.edit_message_text(
-            "🖥️ *Comandos del servidor*\nSelecciona un comando:",
+            "🖥️ *Comandos del servidor*\nSelecciona un comando para ejecutarlo:",
             parse_mode="Markdown",
             reply_markup=_commands_keyboard(commands),
         )
 
     elif action == "run":
         alias = parts[2]
-        commands = ssh_client.load_commands()
+        commands = shell_client.load_commands()
         command = commands.get(alias)
         if not command:
             await query.answer("Comando no encontrado", show_alert=True)
@@ -142,7 +147,7 @@ async def ssh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         msg = await query.message.reply_text(f"⏳ Ejecutando `{alias}`…", parse_mode="Markdown")
 
         try:
-            stdout, stderr, exit_code = await ssh_client.run(command)
+            stdout, stderr, exit_code = await shell_client.run(command)
             output = stdout or stderr or "(sin salida)"
             if len(output) > MAX_OUTPUT:
                 output = "…\n" + output[-MAX_OUTPUT:]

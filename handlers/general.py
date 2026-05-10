@@ -53,9 +53,9 @@ HELP_TEXT = """
 /digest — Ver/cambiar hora del resumen diario
 /torrents — Lista de torrents activos
 /torrent \\<magnet\\> — Añadir torrent
-/ssh — Ejecutar comandos en el servidor
-/sshadd \\<alias\\> \\<cmd\\> — Registrar comando SSH
-/sshdel \\<alias\\> — Eliminar comando SSH
+/cmd — Ejecutar comandos registrados del servidor
+/cmdadd \\<alias\\> \\<comando\\> — Registrar un comando
+/cmddel \\<alias\\> — Eliminar un comando
 /restartai — Reiniciar el bot de IA
 
 *Asistente:*
