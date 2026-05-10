@@ -24,8 +24,8 @@ from handlers import general, notes, panel, webhooks
 from handlers import github as github_handler
 from handlers import logs as logs_handler
 from handlers import qbittorrent as qbt_handler
+from handlers import shell as shell_handler
 from handlers import speedtest as speedtest_handler
-from handlers import ssh as ssh_handler
 from handlers import system as system_handler
 from handlers import wireguard as wireguard_handler
 from logger import start_logger
@@ -90,10 +90,10 @@ async def main() -> None:
     app.add_handler(CommandHandler("digest", digest_handler.digest_cmd))
     app.add_handler(CommandHandler("torrents", qbt_handler.torrents_cmd))
     app.add_handler(CommandHandler("torrent", qbt_handler.torrent_add))
-    app.add_handler(CommandHandler("ssh", ssh_handler.ssh_cmd))
-    app.add_handler(CommandHandler("sshadd", ssh_handler.sshadd_cmd))
-    app.add_handler(CommandHandler("sshdel", ssh_handler.sshdel_cmd))
-    app.add_handler(CommandHandler("restartai", ssh_handler.restartai_cmd))
+    app.add_handler(CommandHandler("cmd", shell_handler.cmd_cmd))
+    app.add_handler(CommandHandler("cmdadd", shell_handler.cmdadd_cmd))
+    app.add_handler(CommandHandler("cmddel", shell_handler.cmddel_cmd))
+    app.add_handler(CommandHandler("restartai", shell_handler.restartai_cmd))
     app.add_handler(CommandHandler("procs", system_handler.procs))
     app.add_handler(CommandHandler("logs", logs_handler.logs_cmd))
     app.add_handler(CommandHandler("alerts", alerts_history_handler.alerts_cmd))
@@ -107,7 +107,7 @@ async def main() -> None:
     app.add_handler(CallbackQueryHandler(panel.panel_callback, pattern=r"^panel:"))
     app.add_handler(CallbackQueryHandler(docker_handler.docker_callback, pattern=r"^docker:"))
     app.add_handler(CallbackQueryHandler(qbt_handler.qbt_callback, pattern=r"^qbt:"))
-    app.add_handler(CallbackQueryHandler(ssh_handler.ssh_callback, pattern=r"^ssh:"))
+    app.add_handler(CallbackQueryHandler(shell_handler.cmd_callback, pattern=r"^cmd:"))
     app.add_handler(CallbackQueryHandler(logs_handler.logs_callback, pattern=r"^logs:"))
     app.add_handler(CallbackQueryHandler(wireguard_handler.wg_callback, pattern=r"^wg:"))
     app.add_handler(CallbackQueryHandler(github_handler.ci_callback, pattern=r"^ci:"))
