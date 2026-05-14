@@ -47,9 +47,24 @@ HELP_TEXT = """
 
 *Utilidades:*
 /speedtest — Test de velocidad de internet
+/weather \\<ciudad\\> — Consultar el tiempo
+/calc \\<expresión\\> — Calculadora
 /note \\<texto\\> — Guardar una nota
 /note del \\<id\\> — Eliminar una nota
 /notes — Ver todas las notas
+/todo — Lista de tareas
+/todo add \\<texto\\> — Añadir tarea
+/todo done \\<id\\> — Marcar tarea como hecha
+/snip \\<nombre\\> \\<contenido\\> — Guardar snippet
+/snip \\<nombre\\> — Recuperar snippet
+/snips — Ver todos los snippets
+/snipdel \\<nombre\\> — Eliminar snippet
+/remind \\<cuándo\\> \\<texto\\> — Programar recordatorio
+/reminders — Ver recordatorios pendientes
+/reminddel \\<id\\> — Eliminar recordatorio
+/cron add \\<horario\\> \\<alias\\> — Programar comando recurrente
+/cron list — Ver comandos programados
+/cron del \\<id\\> — Eliminar cron
 /digest — Ver/cambiar hora del resumen diario
 /torrents — Lista de torrents activos
 /torrent \\<magnet\\> — Añadir torrent
