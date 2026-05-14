@@ -118,6 +118,7 @@ async def main() -> None:
     app.add_handler(CommandHandler("weather", weather_handler.weather_cmd))
 
     # Callbacks
+    app.add_handler(CallbackQueryHandler(general.help_callback, pattern=r"^help:"))
     app.add_handler(CallbackQueryHandler(panel.panel_callback, pattern=r"^panel:"))
     app.add_handler(CallbackQueryHandler(docker_handler.docker_callback, pattern=r"^docker:"))
     app.add_handler(CallbackQueryHandler(qbt_handler.qbt_callback, pattern=r"^qbt:"))
