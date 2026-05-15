@@ -42,6 +42,7 @@ _HELP_CATEGORIES: dict[str, dict] = {
             ("/logs", "Navegar logs del servidor"),
             ("/alerts", "Historial de alertas recibidas"),
             ("/alertsclear", "Limpiar historial de alertas"),
+            ("/logs", "Logs de contenedores Docker"),
             ("/wg", "Estado de peers WireGuard VPN"),
             ("/ci", "Últimas ejecuciones de GitHub Actions"),
         ],

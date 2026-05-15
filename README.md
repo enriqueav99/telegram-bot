@@ -92,7 +92,7 @@ docker compose up -d --build
 | `/metrics` | `system` | Métricas detalladas con barras de progreso. |
 | `/procs` | `system` | Top 10 procesos por CPU, top 5 por memoria. |
 | `/docker` | `docker` | Panel de contenedores con botones start/stop/restart/logs. |
-| `/logs` | `ssh` | Navega por los logs del servidor con botones inline. |
+| `/logs` | `logs` | Logs de contenedores Docker con botones inline. |
 | `/wg` | `wireguard` | Estado de peers WireGuard VPN. |
 | `/ci` | `github_actions` | Últimas 10 ejecuciones de GitHub Actions. |
 

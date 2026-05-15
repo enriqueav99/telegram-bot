@@ -27,6 +27,7 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "digest": False,
     "qbittorrent": False,
     "shell": False,
+    "logs": True,
     "ask": False,
     "wireguard": False,
     "github_actions": False,
@@ -50,6 +51,7 @@ FEATURE_LABELS: dict[str, str] = {
     "digest": "🌅 Resumen diario",
     "qbittorrent": "🧲 qBittorrent",
     "shell": "🖥️ Comandos del servidor",
+    "logs": "📋 Logs de contenedores",
     "ask": "🤖 Claude (API)",
     "wireguard": "🔒 WireGuard VPN",
     "github_actions": "🔧 GitHub Actions",
@@ -93,11 +95,23 @@ class BotConfig:
         )
 
 
+_MIGRATIONS: dict[str, str] = {
+    "ssh": "shell",
+}
+
+
 class FeatureFlags:
     def __init__(self) -> None:
         FEATURES_FILE.parent.mkdir(parents=True, exist_ok=True)
         if FEATURES_FILE.exists():
             saved: dict[str, bool] = json.loads(FEATURES_FILE.read_text())
+            for old_key, new_key in _MIGRATIONS.items():
+                if old_key in saved:
+                    if new_key not in saved:
+                        saved[new_key] = saved.pop(old_key)
+                    else:
+                        del saved[old_key]
+            saved = {k: v for k, v in saved.items() if k in DEFAULT_FEATURES}
             self._flags = {**DEFAULT_FEATURES, **saved}
         else:
             self._flags = dict(DEFAULT_FEATURES)
