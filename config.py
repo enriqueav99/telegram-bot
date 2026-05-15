@@ -30,6 +30,11 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "ask": False,
     "wireguard": False,
     "github_actions": False,
+    "reminders": True,
+    "todo": True,
+    "snippets": True,
+    "cron": False,
+    "weather": True,
 }
 
 FEATURE_LABELS: dict[str, str] = {
@@ -48,6 +53,11 @@ FEATURE_LABELS: dict[str, str] = {
     "ask": "🤖 Claude (API)",
     "wireguard": "🔒 WireGuard VPN",
     "github_actions": "🔧 GitHub Actions",
+    "reminders": "⏰ Recordatorios",
+    "todo": "📋 Lista de tareas",
+    "snippets": "💾 Snippets",
+    "cron": "⏱️ Cron (programador)",
+    "weather": "🌤️ Tiempo",
 }
 
 

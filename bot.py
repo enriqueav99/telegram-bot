@@ -18,14 +18,20 @@ from telegram.ext import (
 from config import BotConfig, FeatureFlags
 from handlers import alerts_history as alerts_history_handler
 from handlers import ask as ask_handler
+from handlers import calc as calc_handler
+from handlers import cron as cron_handler
 from handlers import digest as digest_handler
 from handlers import docker as docker_handler
 from handlers import general, notes, panel, webhooks
 from handlers import github as github_handler
 from handlers import qbittorrent as qbt_handler
+from handlers import reminders as reminders_handler
 from handlers import shell as shell_handler
+from handlers import snippets as snippets_handler
 from handlers import speedtest as speedtest_handler
 from handlers import system as system_handler
+from handlers import todo as todo_handler
+from handlers import weather as weather_handler
 from handlers import wireguard as wireguard_handler
 from logger import start_logger
 from modules.claude_client import ClaudeClient
@@ -100,8 +106,19 @@ async def main() -> None:
     app.add_handler(CommandHandler("askreset", ask_handler.ask_reset))
     app.add_handler(CommandHandler("wg", wireguard_handler.wg_cmd))
     app.add_handler(CommandHandler("ci", github_handler.ci_cmd))
+    app.add_handler(CommandHandler("remind", reminders_handler.remind_cmd))
+    app.add_handler(CommandHandler("reminders", reminders_handler.reminders_list))
+    app.add_handler(CommandHandler("reminddel", reminders_handler.reminddel_cmd))
+    app.add_handler(CommandHandler("todo", todo_handler.todo_cmd))
+    app.add_handler(CommandHandler("snip", snippets_handler.snip_cmd))
+    app.add_handler(CommandHandler("snipdel", snippets_handler.snipdel_cmd))
+    app.add_handler(CommandHandler("snips", snippets_handler.snips_cmd))
+    app.add_handler(CommandHandler("cron", cron_handler.cron_cmd))
+    app.add_handler(CommandHandler("calc", calc_handler.calc_cmd))
+    app.add_handler(CommandHandler("weather", weather_handler.weather_cmd))
 
     # Callbacks
+    app.add_handler(CallbackQueryHandler(general.help_callback, pattern=r"^help:"))
     app.add_handler(CallbackQueryHandler(panel.panel_callback, pattern=r"^panel:"))
     app.add_handler(CallbackQueryHandler(docker_handler.docker_callback, pattern=r"^docker:"))
     app.add_handler(CallbackQueryHandler(qbt_handler.qbt_callback, pattern=r"^qbt:"))
@@ -119,6 +136,10 @@ async def main() -> None:
     # Schedule daily digest
     digest_hour, digest_minute = digest_handler.load_config()
     digest_handler.schedule(app.job_queue, digest_hour, digest_minute)
+
+    # Re-schedule persisted reminders and cron jobs
+    reminders_handler.schedule_pending(app.job_queue)
+    cron_handler.schedule_all(app.job_queue)
 
     # Start webhook server
     webhook_runner = await _start_webhook_server(bot_data, config.alerts_port)
