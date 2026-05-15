@@ -1,8 +1,9 @@
 name: docker-release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
     inputs:
       tag:
@@ -50,7 +51,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},event=tag
             type=semver,pattern={{major}},event=tag
             type=ref,event=tag
-            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && !contains(github.ref_name, '-') }}
             type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
@@ -82,7 +83,7 @@ jobs:
 
   open-deploy-pr:
     needs: build-and-push
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -140,7 +141,7 @@ jobs:
             Bump automático del tag de la imagen de **telegram-bot**.
 
             - Imagen: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.version }}`
-            - Release: ${{ github.event.release.html_url }}
+            - Tag: `${{ github.ref_name }}`
             - Commit: ${{ github.sha }}
           labels: |
             deploy
