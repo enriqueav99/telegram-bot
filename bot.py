@@ -24,6 +24,7 @@ from handlers import digest as digest_handler
 from handlers import docker as docker_handler
 from handlers import general, notes, panel, webhooks
 from handlers import github as github_handler
+from handlers import logs as logs_handler
 from handlers import qbittorrent as qbt_handler
 from handlers import reminders as reminders_handler
 from handlers import shell as shell_handler
@@ -100,6 +101,7 @@ async def main() -> None:
     app.add_handler(CommandHandler("cmddel", shell_handler.cmddel_cmd))
     app.add_handler(CommandHandler("restartai", shell_handler.restartai_cmd))
     app.add_handler(CommandHandler("procs", system_handler.procs))
+    app.add_handler(CommandHandler("logs", logs_handler.logs_cmd))
     app.add_handler(CommandHandler("alerts", alerts_history_handler.alerts_cmd))
     app.add_handler(CommandHandler("alertsclear", alerts_history_handler.alerts_clear))
     app.add_handler(CommandHandler("ask", ask_handler.ask_cmd))
@@ -123,6 +125,7 @@ async def main() -> None:
     app.add_handler(CallbackQueryHandler(docker_handler.docker_callback, pattern=r"^docker:"))
     app.add_handler(CallbackQueryHandler(qbt_handler.qbt_callback, pattern=r"^qbt:"))
     app.add_handler(CallbackQueryHandler(shell_handler.cmd_callback, pattern=r"^cmd:"))
+    app.add_handler(CallbackQueryHandler(logs_handler.logs_callback, pattern=r"^logs:"))
     app.add_handler(CallbackQueryHandler(wireguard_handler.wg_callback, pattern=r"^wg:"))
     app.add_handler(CallbackQueryHandler(github_handler.ci_callback, pattern=r"^ci:"))
 
