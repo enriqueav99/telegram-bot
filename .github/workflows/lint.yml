@@ -17,7 +17,8 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-      - run: pip install ruff
+      - name: Install dev deps
+        run: pip install -r requirements-dev.txt
       - name: ruff check
         run: ruff check .
       - name: ruff format --check

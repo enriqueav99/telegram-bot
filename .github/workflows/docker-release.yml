@@ -82,7 +82,7 @@ jobs:
 
   open-deploy-pr:
     needs: build-and-push
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
