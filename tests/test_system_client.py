@@ -81,17 +81,19 @@ def test_format_shows_values():
 # ── snapshot() integration (mocked psutil) ────────────────────────────────────
 
 
-def test_snapshot_returns_system_snapshot():
+@pytest.mark.asyncio
+async def test_snapshot_returns_system_snapshot():
     with _mock_psutil():
-        result = snapshot()
+        result = await snapshot()
     assert isinstance(result, SystemSnapshot)
     assert result.cpu_percent == 25.0
     assert result.ram_total_gb == pytest.approx(8.0, rel=0.01)
 
 
-def test_snapshot_disk_values():
+@pytest.mark.asyncio
+async def test_snapshot_disk_values():
     with _mock_psutil():
-        result = snapshot()
+        result = await snapshot()
     assert result.disk_total_gb > 0
     assert 0 <= result.disk_percent <= 100
 

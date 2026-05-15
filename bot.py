@@ -30,6 +30,7 @@ from handlers import reminders as reminders_handler
 from handlers import shell as shell_handler
 from handlers import snippets as snippets_handler
 from handlers import speedtest as speedtest_handler
+from handlers import sysalerts as sysalerts_handler
 from handlers import system as system_handler
 from handlers import todo as todo_handler
 from handlers import weather as weather_handler
@@ -38,7 +39,9 @@ from logger import start_logger
 from modules.claude_client import ClaudeClient
 from modules.docker_client import DockerClient
 from modules.github_client import GitHubClient
+from modules.prometheus_client import PrometheusClient
 from modules.qbittorrent_client import QBittorrentClient
+from modules.sysalert_client import SysAlertClient
 
 HEARTBEAT_FILE = Path("/tmp/.bot_alive")
 log = logging.getLogger("bot")
@@ -69,6 +72,8 @@ async def main() -> None:
     qbt = QBittorrentClient()
     claude = ClaudeClient()
     github = GitHubClient(config.github_token, config.github_repo)
+    prometheus = PrometheusClient(config.prometheus_url)
+    sysalerts = SysAlertClient()
 
     app = Application.builder().token(config.token).build()
 
@@ -80,6 +85,8 @@ async def main() -> None:
         "qbt": qbt,
         "claude": claude,
         "github": github,
+        "prometheus": prometheus,
+        "sysalerts": sysalerts,
     }
     app.bot_data.update(bot_data)
 
@@ -118,6 +125,7 @@ async def main() -> None:
     app.add_handler(CommandHandler("cron", cron_handler.cron_cmd))
     app.add_handler(CommandHandler("calc", calc_handler.calc_cmd))
     app.add_handler(CommandHandler("weather", weather_handler.weather_cmd))
+    app.add_handler(CommandHandler("sysalert", sysalerts_handler.sysalert_cmd))
 
     # Callbacks
     app.add_handler(CallbackQueryHandler(general.help_callback, pattern=r"^help:"))
@@ -128,6 +136,9 @@ async def main() -> None:
     app.add_handler(CallbackQueryHandler(logs_handler.logs_callback, pattern=r"^logs:"))
     app.add_handler(CallbackQueryHandler(wireguard_handler.wg_callback, pattern=r"^wg:"))
     app.add_handler(CallbackQueryHandler(github_handler.ci_callback, pattern=r"^ci:"))
+
+    # Sysalerts periodic check (every 5 min, first run after 60s)
+    app.job_queue.run_repeating(sysalerts_handler.check_sysalerts, interval=300, first=60)
 
     # Heartbeat
     async def heartbeat(_: object) -> None:

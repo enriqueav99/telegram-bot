@@ -94,6 +94,16 @@ _HELP_CATEGORIES: dict[str, dict] = {
             ("/askreset", "Reiniciar conversación con Claude"),
         ],
     },
+    "alertas": {
+        "label": "🔔 Alertas",
+        "commands": [
+            ("/sysalert", "Ver umbrales de alerta del sistema"),
+            ("/sysalert cpu 85", "Alertar si CPU ≥ 85%"),
+            ("/sysalert ram 90", "Alertar si RAM ≥ 90%"),
+            ("/sysalert disk 85", "Alertar si disco ≥ 85%"),
+            ("/sysalert cpu off", "Desactivar alerta de CPU"),
+        ],
+    },
 }
 
 _HELP_INTRO = (
@@ -172,7 +182,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     lines: list[str] = ["📡 *Estado del homelab*\n"]
 
     if features.is_enabled("system"):
-        snap = system_client.snapshot()
+        snap = await system_client.snapshot(context.bot_data.get("prometheus"))
         lines.append(
             f"🖥️ CPU: {snap.cpu_percent:.1f}%  |  "
             f"RAM: {snap.ram_used_gb:.1f}/{snap.ram_total_gb:.1f} GB  |  "

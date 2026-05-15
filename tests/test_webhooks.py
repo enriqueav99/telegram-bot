@@ -22,6 +22,7 @@ def _bot_data(tmp_path, monkeypatch, features_on: list[str] = (), chat_id: int |
         log_level="DEBUG",
         github_token="",
         github_repo="",
+        prometheus_url="",
     )
     flags = FeatureFlags()
     for f in features_on:

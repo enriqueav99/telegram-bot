@@ -36,6 +36,7 @@ DEFAULT_FEATURES: dict[str, bool] = {
     "snippets": True,
     "cron": False,
     "weather": True,
+    "sysalerts": False,
 }
 
 FEATURE_LABELS: dict[str, str] = {
@@ -60,6 +61,7 @@ FEATURE_LABELS: dict[str, str] = {
     "snippets": "💾 Snippets",
     "cron": "⏱️ Cron (programador)",
     "weather": "🌤️ Tiempo",
+    "sysalerts": "🔔 Alertas de sistema",
 }
 
 
@@ -72,6 +74,7 @@ class BotConfig:
     log_level: str
     github_token: str
     github_repo: str
+    prometheus_url: str
 
     @classmethod
     def load(cls) -> BotConfig:
@@ -92,6 +95,7 @@ class BotConfig:
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             github_token=os.getenv("GITHUB_TOKEN", ""),
             github_repo=os.getenv("GITHUB_REPO", ""),
+            prometheus_url=os.getenv("PROMETHEUS_URL", ""),
         )
 
 
