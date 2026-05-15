@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 @require_auth
 @require_module("system")
 async def metrics(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    snap = system_client.snapshot()
+    snap = await system_client.snapshot(context.bot_data.get("prometheus"))
     await update.message.reply_text(snap.format(), parse_mode="Markdown")
 
 

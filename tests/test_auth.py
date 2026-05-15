@@ -32,6 +32,7 @@ def _config(allowed: frozenset[int] = frozenset([111])) -> BotConfig:
         log_level="DEBUG",
         github_token="",
         github_repo="",
+        prometheus_url="",
     )
 
 

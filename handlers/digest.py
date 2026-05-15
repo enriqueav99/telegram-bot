@@ -52,7 +52,7 @@ async def _digest_job(context: ContextTypes.DEFAULT_TYPE) -> None:
     lines = ["🌅 *Resumen diario del homelab*\n"]
 
     if features.is_enabled("system"):
-        snap = system_client.snapshot()
+        snap = await system_client.snapshot(context.bot_data.get("prometheus"))
         lines.append(
             f"🖥️ CPU: {snap.cpu_percent:.1f}%  |  "
             f"RAM: {snap.ram_used_gb:.1f}/{snap.ram_total_gb:.1f} GB  |  "
