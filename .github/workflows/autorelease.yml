@@ -7,12 +7,16 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   release:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.new }}
+      bump_type: ${{ steps.bump.outputs.type }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -74,3 +78,11 @@ jobs:
               echo "- Nueva: \`${{ steps.version.outputs.new }}\`"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+  docker:
+    needs: release
+    if: needs.release.outputs.bump_type != 'none'
+    uses: ./.github/workflows/docker-release.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit

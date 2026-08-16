@@ -1,9 +1,14 @@
 name: docker-release
 
 on:
-  push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+  release:
+    types: [published]
+  workflow_call:
+    inputs:
+      version:
+        description: "Versión a publicar (ej. 1.2.3)"
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       tag:
@@ -26,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
-      version: ${{ steps.meta.outputs.version }}
+      version: ${{ steps.effective_version.outputs.value }}
       tags: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v6
@@ -47,16 +52,27 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=raw,value=${{ inputs.version }},enable=${{ github.event_name == 'workflow_call' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_call' && !contains(inputs.version, '-') }}
             type=semver,pattern={{version}},event=tag
             type=semver,pattern={{major}}.{{minor}},event=tag
             type=semver,pattern={{major}},event=tag
             type=ref,event=tag
-            type=raw,value=latest,enable=${{ github.event_name == 'push' && !contains(github.ref_name, '-') }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
             type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.licenses=MIT
+
+      - name: Version efectiva
+        id: effective_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_call" ]; then
+            echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ steps.meta.outputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build and push
         uses: docker/build-push-action@v7
@@ -83,7 +99,7 @@ jobs:
 
   open-deploy-pr:
     needs: build-and-push
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'release' || github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -141,7 +157,7 @@ jobs:
             Bump automático del tag de la imagen de **telegram-bot**.
 
             - Imagen: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.version }}`
-            - Tag: `${{ github.ref_name }}`
+            - Tag: `${{ needs.build-and-push.outputs.version }}`
             - Commit: ${{ github.sha }}
           labels: |
             deploy
